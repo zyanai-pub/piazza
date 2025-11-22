@@ -1,0 +1,23 @@
+{
+  "name": "piazza",
+  "version": "1.0.0",
+  "description": "RESTful SaaS for a Twitter-like system for Advanced Computing Module",
+  "main": "index.js",
+  "scripts": {
+  "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zyanai-pub/piazza.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zyanai-pub/piazza/issues"
+  },
+  "homepage": "https://github.com/zyanai-pub/piazza#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "nodemon": "^3.1.11"
+  }
+}
