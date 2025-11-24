@@ -11,6 +11,8 @@ const authRoute = require('./routes/auth')
 
 app.use('/api/user',authRoute)
 
+app.use('/api/posts',require('./routes/posts'))
+
 app.get('/',(req,res)=>{
     res.send('Hello World! Cloud@Birkbeck is fun!')    
 })
