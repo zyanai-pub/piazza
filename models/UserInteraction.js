@@ -11,14 +11,11 @@ const userInteractionSchema = mongoose.Schema({
         enum:["Like","Dislike", "Comment"]
     },
     timeLeftToExpire:{
-        type:String,
+        type:Number,
         required:true
     },
     commentText:{
         type:String,
-        required: function() {
-            return this.interactionType === 'Comment';
-        }
     }
 },
 {

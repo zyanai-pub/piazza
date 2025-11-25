@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose')
 
-const userInteractionSchema = require('./UserInteraction');
+const userInteractionSchema = require('./UserInteraction.js');
 
 const postSchema = mongoose.Schema({
     title:{
