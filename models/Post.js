@@ -28,12 +28,6 @@ const postSchema = mongoose.Schema({
         type:Date,
         required:true
     },
-    status:{
-        type:String,
-        required:true,
-        enum:["Live","Expired"],
-        default:"Live"
-    },
     owner:{
         type:String,
         required:true
@@ -53,6 +47,19 @@ const postSchema = mongoose.Schema({
 },
 {
     collection: 'Posts',   // Explicit collection name in MongoDB
-    timestamps: true       // Adds createdAt and updatedAt fields
+    timestamps: true,       // Adds createdAt and updatedAt fields
+    // Adding virtuals requires toJSON and toObject to be set to true, we use virtuals to get the expired/live status
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
+
+// Virtual property to check if the post is expired. Based on https://mongoosejs.com/docs/tutorials/virtuals.html
+postSchema.virtual('status').get(function() {
+    if (this.expiration.getTime() > Date.now()) {
+        return 'Live';
+    } else {
+        return 'Expired';
+    }
+});
+
 module.exports=mongoose.model('Posts',postSchema)

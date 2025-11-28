@@ -6,17 +6,27 @@ const Post = require('../models/Post')
 const userInteraction = require('../models/UserInteraction.js')
 const verifyToken = require('../verifyToken')
 
-// Get all posts per topic
+//Action 3: Get all posts per topic
 router.get('/', verifyToken, async(req,res) =>{
     try{
-        const posts = await Post.find({ topics: req.query.topic });
+        const topic = req.query.topic;
+        
+        if (!topic) {
+            return res.status(400).send({ message: "Topic query parameter is required." });
+        }
+        const posts = await Post.find({ topics: topic });
+
+        if (posts.length === 0) {
+            return res.status(404).send({ message: "No posts found for the specified topic." });
+        }
+
         res.send(posts)
     }catch(err){
         res.status(400).send({message:err})
     }
 });
 
-// Create a new post
+// Action 2: Create a new post
 router.post('/', verifyToken, async(req,res) =>{
 
     // fetch user details from token. based on https://www.geeksforgeeks.org/mongodb/mongoose-findbyid-function/
@@ -43,7 +53,7 @@ router.post('/', verifyToken, async(req,res) =>{
     }
 })
 
-// Like/dislike/comment on a post
+// Action 4: Like/dislike/comment on a post
 router.patch('/:postId', verifyToken, async (req, res) => {
         if (!('Comment'===req.body.interactionType) && req.body.commentText) {
             return res.status(400).send({ message: "Comment text should only be provided for 'Comment' interaction type." });
@@ -57,13 +67,13 @@ router.patch('/:postId', verifyToken, async (req, res) => {
         const post = await Post.findById(req.params.postId);
         const user = await User.findById(req.user._id);
 
-        if (!Post) return res.status(404).send({ message: "Post not found" });
+        if (!post) return res.status(404).send({ message: "Post not found" });
 
         // check if user deleted their account but still has a token
         if (!user) return res.status(404).send({ message: "User not found" });
 
         // check if post has expired
-        if (Post.status === "Expired" || post.expiration < Date.now()) {
+        if (post.status === "Expired") {
             return res.status(403).send({ message: "Cannot interact with an expired post." });
         }
 
@@ -101,5 +111,66 @@ router.patch('/:postId', verifyToken, async (req, res) => {
         res.send({message: err});
     }
 })
+
+// Action 5: browse for the most active post per topic with the highest likes and dislikes
+router.get('/mostActive', verifyToken,  async (req, res) => {
+    try {
+        const topic = req.query.topic;
+        if (!topic) {
+            return res.status(400).send({ message: "Topic query parameter is required." });
+        }
+
+        // Fetch posts for the specified topic
+        const posts = await Post.find({ 
+            topics: topic,
+        });
+
+        if (posts.length === 0) {
+            return res.status(404).send({ message: "No posts found for the specified topic." });
+        }
+        
+        // Determine the most active post based on likes + dislikes
+        let mostActivePost = null;
+        let highestActivityCount = -1;
+        posts.forEach(post => {
+            const activityCount = post.likes.length + post.dislikes.length;
+            if (activityCount > highestActivityCount) {
+                highestActivityCount = activityCount;
+                mostActivePost = post;
+            }
+        });
+
+        res.status(200).send(mostActivePost);
+
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+});
+
+// Action 6: browse the history data of expired posts per topic.
+router.get('/history', verifyToken,  async (req, res) => {
+    try {
+        const topic = req.query.topic;
+        if (!topic) {
+            return res.status(400).send({ message: "Topic query parameter is required." });
+        }
+
+        // Fetch expired posts for the specified topic
+        const posts = await Post.find({ 
+            topics: topic,
+            expiration: { $lte: new Date() } // Only expired posts
+        });
+
+        if (posts.length === 0) {
+            return res.status(404).send({ message: "No expired posts found for the specified topic." });
+        }
+        
+
+        res.status(200).send(posts);
+
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+});
 
 module.exports = router
