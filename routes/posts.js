@@ -123,11 +123,8 @@ router.get('/mostActive', verifyToken,  async (req, res) => {
         // Fetch posts for the specified topic
         const posts = await Post.find({ 
             topics: topic,
+            expiration: { $gt: new Date() } // only live posts
         });
-
-        if (posts.length === 0) {
-            return res.status(404).send({ message: "No posts found for the specified topic." });
-        }
         
         // Determine the most active post based on likes + dislikes
         let mostActivePost = null;
@@ -160,11 +157,6 @@ router.get('/history', verifyToken,  async (req, res) => {
             topics: topic,
             expiration: { $lte: new Date() } // Only expired posts
         });
-
-        if (posts.length === 0) {
-            return res.status(404).send({ message: "No expired posts found for the specified topic." });
-        }
-        
 
         res.status(200).send(posts);
 

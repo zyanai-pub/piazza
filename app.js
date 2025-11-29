@@ -8,13 +8,14 @@ app.use(bodyParser.json())
 
 // Importing routes
 const authRoute = require('./routes/auth')
+const postsRoute = require('./routes/posts')
 
 app.use('/api/user',authRoute)
 
-app.use('/api/posts',require('./routes/posts'))
+app.use('/api/posts',postsRoute)
 
 app.get('/',(req,res)=>{
-    res.send('Hello World! Cloud@Birkbeck is fun!')    
+    res.send('Welcome to Piazza API, please register or login to continue.')    
 })
 
 mongoose.connect(process.env.DB_CONNECTOR).then(()=>{
